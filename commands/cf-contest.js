@@ -5,8 +5,8 @@ const get_contest = require('../cf/api').get_contest;
  * command usage: retrives contests yet to start & User can filter based on division
  *   
  * usage:
- *   !contest [division]
- *    division can be 1, 2 or 3
+ *   !cf-contest [division]
+ *    division can be 1, 2, 3 or 4
  */
 
  /* Displays the latest upcoming contest of the provided division
@@ -14,9 +14,25 @@ const get_contest = require('../cf/api').get_contest;
   * and some additional contest
   */
 
+function calcTime(time, city, offset) {
+    // create Date object for current location
+    d = new Date();
+
+    // convert to msec
+    // add local time zone offset 
+    // get UTC time in msec
+    utc = time + (d.getTimezoneOffset() * 60000);
+
+    // create new Date object for different city
+    // using supplied offset
+    nd = new Date(utc + (3600000*offset));
+
+    // return time as a string
+    return "The local time in " + city + " is " + nd.toLocaleString();
+}
 module.exports = {
-    name: 'contest',
-    usage:  'contest [division]',
+    name: 'cf-contest',
+    usage:  '[division]',
     description: 'Retrieve list of yet to start contests filtered by' + '(optional) division number.',
     args: false,
     cooldown: 5,
@@ -26,7 +42,7 @@ module.exports = {
         if(args.length) {
             div = Number.parseInt(args[0]);
     
-            if(Number.isNaN(div) || div < 0 || div > 3) {
+            if(Number.isNaN(div) || div < 0 || div > 4) {
                 msg.reply(`${args[0]} is not a valid division number!`);
                 return;
             }
@@ -51,7 +67,7 @@ module.exports = {
         }
 
         if(!valid.length) {
-            let reply = 'found no contests';
+            let reply = 'Found no contests';
 
             if(div !== undefined) {
                 reply += ` for division ${div}`;
@@ -60,21 +76,13 @@ module.exports = {
             msg.reply(reply);
             return;
         }
-
-        //Sorting The array
-        valid.sort(function(a,b){
+        
+        valid.sort((a, b) => {
             // Turn your strings into dates, and then subtract them
             // to get a value that is either negative, positive, or zero.
             return new Date(a.startTimeSeconds) - new Date(b.startTimeSeconds);
           });
         
-        
-        //Debugging
-        // for(const con of valid){
-        //     var TheDate = new Date(con.startTimeSeconds * 1000).toString()
-        //     console.log(TheDate);
-        // }
-    
         let Div1=0, Div2=0, Div3=0;
         for(const con of valid) {
             if(con.name.includes(`Div. 1`) && Div1===1)continue;
@@ -85,9 +93,8 @@ module.exports = {
                 .setURL(`http://codeforces.com/contests/${con.id}`)
                 .addField('Type', con.type);
     
-            if(con.startTimeSeconds)
-            {
-                var TheDate = new Date(con.startTimeSeconds * 1000).toString()
+            if(con.startTimeSeconds) {
+                var TheDate = calcTime(con.startTimeSeconds * 1000, "India", '+5.5');
                 embed.addField('Starting', TheDate);
             }
             if(con.preparedBy) embed.addField('Author', con.preparedBy);
