@@ -9,3 +9,4 @@ The discord bot for our competitive coding active discord written in Node.JS
 5. Run `node index.js` to start the server for the Bot.
 6. Push the changes in a separate branch and create a pull request. After the PR is merged, it will be automatically deployed to heroku as the repo is connected to that, and the Raju bot will be enhanced with the feature you implemented, see it action in the CP discord server!
 
+
